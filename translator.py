@@ -1,4 +1,5 @@
 import os
+import re
 import pyperclip
 from time import sleep
 from googletrans import Translator
@@ -55,9 +56,11 @@ class CustomTranslator:
         Returns:
         string: Texto formateado
         """
-        self.modified_text = self.original_text.replace("\n", " ").replace(
-            "\r", ""
-        )
+        # self.modified_text = self.original_text.replace("\n", " ").replace(
+        #   "\r", ""
+        # )
+        self.modified_text = re.sub("\.\n", ".<br><br>", self.original_text)
+        self.modified_text = re.sub("\n", "\r", self.modified_text)
 
     def translate_text(self, src: str = "en", dest: str = "es") -> str:
         """
