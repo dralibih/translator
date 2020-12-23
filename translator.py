@@ -1,3 +1,4 @@
+import os
 import pyperclip
 from time import sleep
 from googletrans import Translator
@@ -9,9 +10,9 @@ class Clipboard:
     """
 
     def __init__(self):
-        self.original_text = ''
+        self.original_text = ""
 
-    def get_paste_buffer(self) -> "String":
+    def get_paste_buffer(self) -> str:
         """
         Obtiene el texto copiado del clipboard
 
@@ -22,7 +23,7 @@ class Clipboard:
         result = pyperclip.paste()
         return result
 
-    def modified_clipboard_event(self) -> "Bool":
+    def modified_clipboard_event(self) -> bool:
         """
         Devuelve True cuando el texto del clipboard fue
         modificado
@@ -32,19 +33,19 @@ class Clipboard:
         """
         aux = self.get_paste_buffer()
         return self.original_text != aux
-    
+
 
 class CustomTranslator:
     """
     Clase que permite formatear un texto y traducirlo
     """
 
-    def __init__(self,  text='Hi!'):
+    def __init__(self, text="Hi!"):
         self.original_text = text
-        self.modified_text = ''
-        self.translated_text = ''
+        self.modified_text = ""
+        self.translated_text = ""
 
-    def remove_breaklines(self) -> "String":
+    def remove_breaklines(self) -> str:
         """
         Remueve los saltos de linea y los retorno de carro de un texto
 
@@ -54,10 +55,11 @@ class CustomTranslator:
         Returns:
         string: Texto formateado
         """
-        self.modified_text = self.original_text.replace("\n", " ").replace("\r", "")
+        self.modified_text = self.original_text.replace("\n", " ").replace(
+            "\r", ""
+        )
 
-
-    def translate_text(self, src="en", dest="es") -> "String":
+    def translate_text(self, src: str = "en", dest: str = "es") -> str:
         """
         Traduce el texto ingresado desde el idioma de origen
         al idioma de destino
@@ -70,41 +72,21 @@ class CustomTranslator:
         Returns:
         string: Texto traducido
         """
-        
+
         self.remove_breaklines()
-        translator = Translator(
-                            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) \
-                                        AppleWebKit/537.36 (KHTML, like Gecko) \
-                                        Chrome/68.0.3440.106 Safari/537.36",
-                            proxies=None, 
-                            service_urls=[
-                                  'translate.google.us',
-                                  'translate.google.cl',
-                                  'translate.google.com.ar',
-                                ],
-                            timeout=None
-            )
+        translator = Translator()
         while True:
             try:
-                result = translator.translate(self.modified_text, src=src, dest=dest)
+                result = translator.translate(
+                    self.modified_text, src=src, dest=dest
+                )
                 break
             except Exception as e:
                 sleep(0.5)
-                translator = Translator(user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) \
-                                            AppleWebKit/537.36 (KHTML, like Gecko) \
-                                            Chrome/68.0.3440.106 Safari/537.36",
-                                proxies=None, 
-                                service_urls=[
-                                      'translate.google.us',
-                                      'translate.google.cl',
-                                      'translate.google.com.ar',
-                                    ],
-                                timeout=None
-                            )
+                translator = Translator()
 
         self.translated_text = result.text
         self.create_html()
-
 
     def create_html(self) -> None:
         html_template = f"""
@@ -128,12 +110,14 @@ class CustomTranslator:
             </html>
         """
 
-        with open("index.html", "w+", encoding="utf-8") as f:
+        with open("./output/index.html", "w+", encoding="utf-8") as f:
             f.write(html_template)
 
 
-
 if __name__ == "__main__":
+
+    if not os.path.exists("output"):
+        os.makedirs("output")
 
     cp = Clipboard()
     trans = CustomTranslator()
@@ -142,5 +126,5 @@ if __name__ == "__main__":
         if cp.modified_clipboard_event():
             cp.original_text = cp.get_paste_buffer()
             trans.original_text = cp.original_text
-            trans.translate_text(src='en', dest='es')
+            trans.translate_text(src="en", dest="es")
         sleep(1)
